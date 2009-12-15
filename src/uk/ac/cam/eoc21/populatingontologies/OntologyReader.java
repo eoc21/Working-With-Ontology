@@ -2,24 +2,26 @@ package populatingontologies;
 /**
  * Class to populate an ontology with Individuals using Jena.
  */
-import com.hp.hpl.jena.ontology.Individual;
-import com.hp.hpl.jena.ontology.OntClass;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 /**
- * Simple class to read in an OWL ontology into an ontModel in Jena.
+ * Simple class to read in an OWL ontology into an ontModel in Jena. The class will allow users to populate the ontology with 
+ * individuals, and finally merge the ontologies together.
  * 
  * @author eoc21
  * 
  */
 public class OntologyReader {
 	private String ontologyURI;
-	private static final String NS = "http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#";
-	private OntModel propertiesOntology;
-	private Model propertiesOnt;
+	private OntModel ontologyModel;
+	private Model rdfOntologyModel;
 	/**
 	 * 
 	 * @param uri - Ontology uri.
@@ -31,58 +33,62 @@ public class OntologyReader {
 	 * Method to read in an ontology from a URI.
 	 */
 	private void readOntology() {
-		propertiesOntology = ModelFactory
+		ontologyModel = ModelFactory
 				.createOntologyModel(OntModelSpec.OWL_MEM);
-		setPropertiesOnt(propertiesOntology.read(ontologyURI, "RDF/XML"));
-	}
-	/**
-	 * 
-	 * @param ontology - OntModel representation of an ontology.
-	 * @param owlClassName - String representation of an OWL class.
-	 * @param instanceName - String representation of an OWL individual.
-	 */
-	public void addInstance(final OntModel ontology, final String owlClassName,
-			final String instanceName) {
-		OntClass owlClass = ontology.getOntClass(NS + owlClassName);
-		Individual anIndividual = propertiesOntology.createIndividual(NS
-				+ instanceName, owlClass);
-		anIndividual.addComment("This is a test!!", instanceName);
-		System.out.println(anIndividual.getComment(instanceName));
+		setRDFModel(ontologyModel.read(ontologyURI, "RDF/XML"));
 	}
 	/**
 	 * 
 	 * @return OntModel - the ontology.
 	 */
 	public OntModel getOntologyModel() {
-		return propertiesOntology;
-	}
-
-	public static void main(String[] args) {
-		OntologyReader oReader = new OntologyReader(
-				"http://ontologies.googlecode.com/svn/trunk/src/ChemAxiomProp.owl");
-		oReader.readOntology();
-		System.out.println(oReader.getOntologyModel().size());
-		oReader.addInstance(oReader.getOntologyModel(),
-				"DielectricBreakdownVoltage", "TEST");
-		System.out.println(oReader.getOntologyModel().size());
-		oReader.addInstance(oReader.getOntologyModel(),
-				"DielectricBreakdownVoltage", "TEST1");
-		System.out.println(oReader.getOntologyModel().size());
-		System.out.println(oReader.getOntologyModel().getIndividual(
-				OntologyReader.NS + "TEST"));
+		return ontologyModel;
 	}
 	/**
 	 * 
 	 * @param propertiesOnt - RDF model for ChemAxiomProperties ontology.
 	 */
-	public void setPropertiesOnt(Model propertiesOnt) {
-		this.propertiesOnt = propertiesOnt;
+	private void setRDFModel(final Model propertiesOnt) {
+		this.rdfOntologyModel = propertiesOnt;
 	}
 	/**
 	 * 
 	 * @return RDFModel representation of the ontology.
 	 */
 	public Model getPropertiesOnt() {
-		return propertiesOnt;
+		return rdfOntologyModel;
+	}
+
+	public static void main(String[] args) throws IOException {
+		OntologyReader oReader = new OntologyReader(
+				"http://ontologies.googlecode.com/svn/trunk/src/ChemAxiomProp.owl");
+		oReader.readOntology();
+		System.out.println(oReader.getOntologyModel().size());
+		OntologyProcessor.addInstance(oReader.getOntologyModel(),OntologyNameSpaceDictionary.PROPERTY_NS,
+				"DielectricBreakdownVoltage", "TEST");
+		System.out.println(oReader.getOntologyModel().size());
+		OntologyProcessor.addInstance(oReader.getOntologyModel(),OntologyNameSpaceDictionary.PROPERTY_NS,
+				"DielectricBreakdownVoltage", "TEST3");
+		System.out.println(oReader.getOntologyModel().size());
+		OntModel updatedOntology = oReader.getOntologyModel();
+		//Merge in the  measurement techniques.
+		OntologyReader techniques = new OntologyReader("http://ontologies.googlecode.com/svn/trunk/src/ChemAxiomMetrology.owl");
+		techniques.readOntology();
+		OntModel techniquesOntology = techniques.getOntologyModel();
+		OntologyReader conditions = new OntologyReader(OntologyNameSpaceDictionary.MEASUREMENT_CONDITIONS_URI);
+		conditions.readOntology();
+		OntologyReader units = new OntologyReader(OntologyNameSpaceDictionary.UNITS_URI);
+		units.readOntology();
+		OntologyReader standards = new OntologyReader(OntologyNameSpaceDictionary.MEASUREMENT_STANDARDS_URI);
+		standards.readOntology();
+		ArrayList<OntModel> ontologies = new ArrayList<OntModel>();
+		ontologies.add(updatedOntology);
+		ontologies.add(techniquesOntology);
+		ontologies.add(conditions.getOntologyModel());
+		ontologies.add(units.getOntologyModel());
+		ontologies.add(standards.getOntologyModel());
+		OntModel mergedOntology = OntologyProcessor.mergeOntologies(ontologies);
+		FileWriter fw = new FileWriter("TestOntologyOutput.owl");
+		mergedOntology.write(fw);
 	}
 }
