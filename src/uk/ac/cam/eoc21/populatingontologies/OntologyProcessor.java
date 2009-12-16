@@ -7,6 +7,7 @@ import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
  * This class provides functionality to add extra information to the separate
@@ -56,6 +57,19 @@ public class OntologyProcessor {
 			mergedOntology.add(anOntology);
 		}
 		return mergedOntology;
+	}
+	/**
+	 * 
+	 * @param ontology - OntModel to extract all OntClasses.
+	 * @return
+	 */
+	public static ArrayList<OntClass> getAllOWLClasses(final OntModel ontology){
+		ExtendedIterator<OntClass> owlClasses = ontology.listClasses();
+		ArrayList<OntClass> ontologyClasses = new ArrayList<OntClass>();
+		while(owlClasses.hasNext()){
+			ontologyClasses.add(owlClasses.next());
+		}
+		return ontologyClasses;
 	}
 
 }
