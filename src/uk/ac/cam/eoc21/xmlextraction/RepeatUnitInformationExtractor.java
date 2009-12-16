@@ -182,7 +182,7 @@ public class RepeatUnitInformationExtractor {
 		for (int i = 0; i < children.length; i++) {
 			System.out.println(i);
 			repeatUnitIdfile = children[i].replace(".xml", "");
-			String fileName = dir + "\\" + children[i];
+			String fileName = dir + "/" + children[i];
 			Document document = RepeatUnitInformationExtractor
 					.readXML(new File(fileName));
 			repeatUnit = RepeatUnitInformationExtractor
