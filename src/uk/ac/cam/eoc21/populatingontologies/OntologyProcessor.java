@@ -34,7 +34,7 @@ public class OntologyProcessor {
 	 * @param instanceName
 	 *            - String representation of an OWL individual.
 	 */
-	public static void addInstance(final OntModel ontology,
+	public static Individual addInstance(final OntModel ontology,
 			final String nameSpace, final String owlClassName,
 			final String instanceName) {
 		OntClass owlClass = ontology.getOntClass(nameSpace + owlClassName);
@@ -42,6 +42,7 @@ public class OntologyProcessor {
 				+ instanceName, owlClass);
 		anIndividual.addComment("This is a test!!", instanceName);
 		System.out.println(anIndividual.getComment(instanceName));
+		return anIndividual;
 	}
 
 	/**

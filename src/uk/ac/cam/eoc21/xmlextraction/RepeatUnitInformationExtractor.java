@@ -8,6 +8,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.hp.hpl.jena.ontology.ObjectProperty;
+
+import populatingontologies.OntologyNameSpaceDictionary;
+import populatingontologies.OntologyProcessor;
+import populatingontologies.OntologyReader;
 import populatingontologies.RDFTriple;
 import populatingontologies.RDFTripleStore;
 
@@ -169,6 +174,9 @@ public class RepeatUnitInformationExtractor {
 	public static void main(String[] args) throws IOException {
 		ArrayList<RDFTriple> triples = new ArrayList<RDFTriple>();
 		RepeatUnit repeatUnit = new RepeatUnit();
+		OntologyReader oReader = new OntologyReader(OntologyNameSpaceDictionary.REPEATUNIT_URI);
+		oReader.readOntology();
+		ObjectProperty hasSample = oReader.getOntologyModel().getObjectProperty(OntologyNameSpaceDictionary.REPEATUNIT_NS + "hasSample");
 		File dir = new File(args[0]);
 		// String repeatUnitIdWithUnitAndValue;
 		String repeatUnitIdfile;
@@ -189,9 +197,14 @@ public class RepeatUnitInformationExtractor {
 					.readXML(new File(fileName));
 			repeatUnit = RepeatUnitInformationExtractor
 					.processRepeatUnit(document);
+			//Add polymer instances.
+			OntologyProcessor.addInstance(oReader.getOntologyModel(),OntologyNameSpaceDictionary.REPEATUNIT_NS,
+					"Polymer", repeatUnitIdfile);
 			for (int j = 0; j < repeatUnit.getRepeatUnitSamples().size(); j++) {
 				// Populate rdf triple store
 				sampleId = repeatUnit.getRepeatUnitSamples().get(j).getId();
+				//TODO Add polymer samples to ontology here!
+				OntologyProcessor.addInstance(oReader.getOntologyModel(), OntologyNameSpaceDictionary.REPEATUNIT_NS,"PolymerSample",sampleId);
 				RDFTriple ruTriple = new RDFTriple(repeatUnitIdfile,
 						HAS_SAMPLE, sampleId);
 				triples.add(ruTriple);
@@ -275,6 +288,8 @@ public class RepeatUnitInformationExtractor {
 				}
 			}
 		}
+		FileWriter fw = new FileWriter("RepeatUnitBlahBlah.owl");
+		oReader.getOntologyModel().write(fw);
 /*		FileWriter bw = new FileWriter(args[1]);
 		for (RDFTriple rt : triples) {
 			bw.write(rt.getSubject() + ":" + rt.getPredicate() + ":"
