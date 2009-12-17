@@ -33,7 +33,7 @@ public class OntologyReader {
 	/**
 	 * Method to read in an ontology from a URI.
 	 */
-	private void readOntology() {
+	public void readOntology() {
 		ontologyModel = ModelFactory
 				.createOntologyModel(OntModelSpec.OWL_MEM);
 		setRDFModel(ontologyModel.read(ontologyURI, "RDF/XML"));

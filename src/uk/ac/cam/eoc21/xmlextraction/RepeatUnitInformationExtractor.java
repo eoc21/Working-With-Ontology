@@ -275,13 +275,12 @@ public class RepeatUnitInformationExtractor {
 				}
 			}
 		}
-		FileWriter bw = new FileWriter(args[1]);
+/*		FileWriter bw = new FileWriter(args[1]);
 		for (RDFTriple rt : triples) {
 			bw.write(rt.getSubject() + ":" + rt.getPredicate() + ":"
 			+ rt.getObject()+"\n");
 		}
 		bw.close();
-		
 		  Iterator it = uniqueProperties.iterator(); 
 		  int counter = 0;
 		  FileWriter uniquePropertyFile = new FileWriter(args[2]); 
@@ -290,6 +289,6 @@ public class RepeatUnitInformationExtractor {
 		  counter++; } 
 		  uniquePropertyFile.close(); 
 		  System.out.println("Number of properties:" +counter);
-		 
+	*/	 
 	}
 }
