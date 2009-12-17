@@ -27,7 +27,7 @@ public class Mapper {
 		BufferedReader br = new BufferedReader(new FileReader(fileToMap));
 		String line;
 		while((line = br.readLine())!=null){
-			String [] propertyInformation = line.split(" ");
+			String [] propertyInformation = line.split("\t");
 			PolyInfo2ChemAxiomPropertyMapper propertyMapper = new PolyInfo2ChemAxiomPropertyMapper(propertyInformation[0],propertyInformation[1]);
 			mappedProperties.add(propertyMapper);
 		}

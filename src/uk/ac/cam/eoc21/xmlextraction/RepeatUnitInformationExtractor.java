@@ -12,9 +12,11 @@ import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.ontology.ObjectProperty;
 
+import populatingontologies.Mapper;
 import populatingontologies.OntologyNameSpaceDictionary;
 import populatingontologies.OntologyProcessor;
 import populatingontologies.OntologyReader;
+import populatingontologies.PolyInfo2ChemAxiomPropertyMapper;
 import populatingontologies.RDFTriple;
 import populatingontologies.RDFTripleStore;
 
@@ -182,7 +184,8 @@ public class RepeatUnitInformationExtractor {
 		OntologyReader propertiesOntologyReader = new OntologyReader(OntologyNameSpaceDictionary.PROPERTY_URI);
 		propertiesOntologyReader.readOntology();
 		//Need to map properties to ontology properties
-		
+		Mapper m = new Mapper(new File(args[3]));
+		ArrayList<PolyInfo2ChemAxiomPropertyMapper> polyInfo2ChemAxiomPropMap = m.mapProperties();
 		ObjectProperty hasSample = oReader.getOntologyModel().getObjectProperty(OntologyNameSpaceDictionary.REPEATUNIT_NS + "hasSample");
 		File dir = new File(args[0]);
 		// String repeatUnitIdWithUnitAndValue;
@@ -226,6 +229,14 @@ public class RepeatUnitInformationExtractor {
 							.getProperties().get(k).getValue();
 					propId = repeatUnit.getRepeatUnitSamples().get(j)
 							.getProperties().get(k).getId();
+					//Need to map propId now to OWL class name
+					String mappedPropId = "";
+					for(PolyInfo2ChemAxiomPropertyMapper prop : polyInfo2ChemAxiomPropMap){
+						if ((prop.getPolyInfoProperty() != "NULL") && propId.equals(prop.getPolyInfoProperty())){
+							mappedPropId = prop.getChemAxiomPropertyValue();
+						}
+					}
+					System.out.println(mappedPropId);
 					uniqueProperties.add(repeatUnit.getRepeatUnitSamples().get(j).getProperties().get(k).getId());
 					if (unitValue != " " || sampleId != " ") {
 						RDFTriple samplePropertyTriple = new RDFTriple(
