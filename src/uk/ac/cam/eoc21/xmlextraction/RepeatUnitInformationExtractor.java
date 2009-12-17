@@ -9,8 +9,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.ontology.ObjectProperty;
+import com.hp.hpl.jena.ontology.OntModel;
 
 import populatingontologies.Mapper;
 import populatingontologies.OntologyNameSpaceDictionary;
@@ -28,7 +30,8 @@ import nu.xom.ParsingException;
 
 /**
  * Extracts information from repeat unit xml for populating an ontology with
- * triples.
+ * triples. (In the first instance we will use more DatatypeProperty values
+ * than ObjecttypeProperty values.
  * 
  * @author eoc21
  * 
@@ -183,10 +186,22 @@ public class RepeatUnitInformationExtractor {
 		//Read in properties ontology
 		OntologyReader propertiesOntologyReader = new OntologyReader(OntologyNameSpaceDictionary.PROPERTY_URI);
 		propertiesOntologyReader.readOntology();
+		DatatypeProperty hasValue = propertiesOntologyReader.getOntologyModel().getDatatypeProperty(OntologyNameSpaceDictionary.PROPERTY_NS + "hasValue");
 		//Need to map properties to ontology properties
 		Mapper m = new Mapper(new File(args[3]));
 		ArrayList<PolyInfo2ChemAxiomPropertyMapper> polyInfo2ChemAxiomPropMap = m.mapProperties();
 		ObjectProperty hasSample = oReader.getOntologyModel().getObjectProperty(OntologyNameSpaceDictionary.REPEATUNIT_NS + "hasSample");
+		//Read in units ontology
+		OntologyReader unitsOntologyReader = new OntologyReader(OntologyNameSpaceDictionary.UNITS_URI);
+		unitsOntologyReader.readOntology();
+		DatatypeProperty hasUnit = propertiesOntologyReader.getOntologyModel().createDatatypeProperty(OntologyNameSpaceDictionary.PROPERTY_NS + "hasUnit");
+		DatatypeProperty hasMeaurementTechnique = propertiesOntologyReader.getOntologyModel().createDatatypeProperty(OntologyNameSpaceDictionary.PROPERTY_NS + "hasMeasurementTechnique"); 
+		ObjectProperty hasPropertyOf = oReader.getOntologyModel().createObjectProperty(OntologyNameSpaceDictionary.REPEATUNIT_NS + "hasProperty");
+		//Measurement condition / technique
+		OntologyReader measurementTechniquesOntologyReader = new OntologyReader(OntologyNameSpaceDictionary.MEASUREMENT_TECHNIQUES_URI);
+		measurementTechniquesOntologyReader.readOntology();
+		DatatypeProperty hasCondition = measurementTechniquesOntologyReader.getOntologyModel().createDatatypeProperty(OntologyNameSpaceDictionary.MEASUREMENT_TECHNIQUES_NS + "hasCondition");
+		
 		File dir = new File(args[0]);
 		// String repeatUnitIdWithUnitAndValue;
 		String repeatUnitIdfile;
@@ -236,7 +251,11 @@ public class RepeatUnitInformationExtractor {
 							mappedPropId = prop.getChemAxiomPropertyValue();
 						}
 					}
-					System.out.println(mappedPropId);
+					Individual repeatUnitSamplePropertyInstance = OntologyProcessor.addInstance(propertiesOntologyReader.getOntologyModel(), OntologyNameSpaceDictionary.PROPERTY_NS,mappedPropId,repeatUnitIdfile+"_"+sampleId+"_"+mappedPropId);
+					repeatUnitSampleInstance.hasProperty(hasPropertyOf,repeatUnitSamplePropertyInstance);
+					repeatUnitSamplePropertyInstance.addProperty(hasValue, propValue);	
+					Individual repeatUnitSamplePropertyUnit = OntologyProcessor.addInstance(unitsOntologyReader.getOntologyModel(), OntologyNameSpaceDictionary.UNITS_NS, "Unit", repeatUnitIdfile+"_"+sampleId+"_"+unitValue);
+					repeatUnitSamplePropertyInstance.addProperty(hasUnit,unitValue); //.addProperty(hasUnit, repeatUnitSamplePropertyUnit);
 					uniqueProperties.add(repeatUnit.getRepeatUnitSamples().get(j).getProperties().get(k).getId());
 					if (unitValue != " " || sampleId != " ") {
 						RDFTriple samplePropertyTriple = new RDFTriple(
@@ -262,7 +281,7 @@ public class RepeatUnitInformationExtractor {
 					for (int l = 0; l < repeatUnit.getRepeatUnitSamples()
 							.get(j).getProperties().get(k).getDataProperties()
 							.size(); l++) {
-
+						Individual measurementTechniqueInstance = null;
 						if (repeatUnit.getRepeatUnitSamples().get(j)
 								.getProperties().get(k).getDataProperties()
 								.get(l).getId().equals("Method")) {
@@ -277,6 +296,9 @@ public class RepeatUnitInformationExtractor {
 												+ propId, HAS_METHOD,
 										repeatUnitIdfile + "_" + sampleId + "_"
 												+ measurementTechnique);
+								//Add triple for property has measurement technique
+							//	measurementTechniqueInstance = OntologyProcessor.addInstance(measurementTechniquesOntologyReader.getOntologyModel(), OntologyNameSpaceDictionary.MEASUREMENT_TECHNIQUES_NS, "ExperimentalTechnique", measurementTechnique);
+								repeatUnitSamplePropertyInstance.addProperty(hasMeaurementTechnique,measurementTechnique);//TODO need to change measurementTechniques to objects not data types.
 								triples.add(propertyTechniqueTriple);
 							}
 							measurementTechniquesSet.add(repeatUnit
@@ -290,6 +312,8 @@ public class RepeatUnitInformationExtractor {
 									.getRepeatUnitSamples().get(j)
 									.getProperties().get(k).getDataProperties()
 									.get(l).getValue();
+							repeatUnitSamplePropertyInstance.addProperty(hasCondition, measurementCondition);//TODO need to change measurementCondition to ObjectTypeProperty
+			//				measurementTechniqueInstance.addProperty(hasCondition, measurementCondition);
 							if (measurementCondition != " ") {
 								RDFTriple propertyConditionTriple = new RDFTriple(
 										repeatUnitIdfile + "_" + sampleId + "_"
@@ -307,8 +331,15 @@ public class RepeatUnitInformationExtractor {
 				}
 			}
 		}
-		FileWriter fw = new FileWriter("RepeatUnitBlahBlah.owl");
-		oReader.getOntologyModel().write(fw);
+		ArrayList<OntModel> ontologies = new ArrayList<OntModel>();
+		ontologies.add(oReader.getOntologyModel());
+		ontologies.add(propertiesOntologyReader.getOntologyModel());
+		ontologies.add(measurementTechniquesOntologyReader.getOntologyModel());
+		OntModel mergedOntology = OntologyProcessor.mergeOntologies(ontologies);
+		//FileWriter fw = new FileWriter("PropertiesBlahBlah.owl");
+		//propertiesOntologyReader.getOntologyModel().write(fw);
+		FileWriter fw = new FileWriter("MergedBlahBlah.owl");
+		mergedOntology.write(fw);
 /*		FileWriter bw = new FileWriter(args[1]);
 		for (RDFTriple rt : triples) {
 			bw.write(rt.getSubject() + ":" + rt.getPredicate() + ":"
