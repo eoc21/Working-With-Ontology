@@ -178,6 +178,11 @@ public class RepeatUnitInformationExtractor {
 		RepeatUnit repeatUnit = new RepeatUnit();
 		OntologyReader oReader = new OntologyReader(OntologyNameSpaceDictionary.REPEATUNIT_URI);
 		oReader.readOntology();
+		//Read in properties ontology
+		OntologyReader propertiesOntologyReader = new OntologyReader(OntologyNameSpaceDictionary.PROPERTY_URI);
+		propertiesOntologyReader.readOntology();
+		//Need to map properties to ontology properties
+		
 		ObjectProperty hasSample = oReader.getOntologyModel().getObjectProperty(OntologyNameSpaceDictionary.REPEATUNIT_NS + "hasSample");
 		File dir = new File(args[0]);
 		// String repeatUnitIdWithUnitAndValue;
