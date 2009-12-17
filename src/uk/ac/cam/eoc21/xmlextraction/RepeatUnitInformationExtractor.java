@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.ontology.ObjectProperty;
 
 import populatingontologies.OntologyNameSpaceDictionary;
@@ -198,13 +200,14 @@ public class RepeatUnitInformationExtractor {
 			repeatUnit = RepeatUnitInformationExtractor
 					.processRepeatUnit(document);
 			//Add polymer instances.
-			OntologyProcessor.addInstance(oReader.getOntologyModel(),OntologyNameSpaceDictionary.REPEATUNIT_NS,
+			Individual repeatUnitInstance = OntologyProcessor.addInstance(oReader.getOntologyModel(),OntologyNameSpaceDictionary.REPEATUNIT_NS,
 					"Polymer", repeatUnitIdfile);
 			for (int j = 0; j < repeatUnit.getRepeatUnitSamples().size(); j++) {
 				// Populate rdf triple store
 				sampleId = repeatUnit.getRepeatUnitSamples().get(j).getId();
-				//TODO Add polymer samples to ontology here!
-				OntologyProcessor.addInstance(oReader.getOntologyModel(), OntologyNameSpaceDictionary.REPEATUNIT_NS,"PolymerSample",sampleId);
+				//Add polymer samples to ontology here!
+				Individual repeatUnitSampleInstance = OntologyProcessor.addInstance(oReader.getOntologyModel(), OntologyNameSpaceDictionary.REPEATUNIT_NS,"PolymerSample",sampleId);
+				repeatUnitInstance.addProperty(hasSample, repeatUnitSampleInstance);
 				RDFTriple ruTriple = new RDFTriple(repeatUnitIdfile,
 						HAS_SAMPLE, sampleId);
 				triples.add(ruTriple);
