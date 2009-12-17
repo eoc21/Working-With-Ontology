@@ -2,7 +2,9 @@ package populatingontologies;
 
 import java.util.ArrayList;
 
+import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.Individual;
+import com.hp.hpl.jena.ontology.ObjectProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
@@ -44,6 +46,34 @@ public class OntologyProcessor {
 
 	/**
 	 * 
+	 * @param ontology
+	 *            - OntModel representation of an ontology.
+	 * @param nameSpace
+	 *            - Name space of the ontology.
+	 * @param propertyName
+	 *            - String representation of the property name.
+	 * @return
+	 */
+	public static DatatypeProperty addDataTypeProperty(final OntModel ontology,
+			final String nameSpace, final String propertyName) {
+		DatatypeProperty createdDataProperty = ontology
+				.createDatatypeProperty(nameSpace + propertyName);
+		return createdDataProperty;
+	}
+	/**
+	 * 
+	 * @param ontology - OntModel representation of an ontology.
+	 * @param nameSpace - Name space of the ontology.
+	 * @param propertyName - String representation of the property name.
+	 * @return
+	 */
+	public static ObjectProperty addObjectProperty(final OntModel ontology, final String nameSpace, final String propertyName){
+		ObjectProperty createdObjectProperty = ontology.createObjectProperty(nameSpace + propertyName);
+		return createdObjectProperty;
+	}
+
+	/**
+	 * 
 	 * @param ontologies
 	 *            - ArrayList of the ontologies to merge.
 	 * @re OntModel wnOntology = ModelFactory.createOntologyModel();
@@ -58,15 +88,17 @@ public class OntologyProcessor {
 		}
 		return mergedOntology;
 	}
+
 	/**
 	 * 
-	 * @param ontology - OntModel to extract all OntClasses.
+	 * @param ontology
+	 *            - OntModel to extract all OntClasses.
 	 * @return
 	 */
-	public static ArrayList<OntClass> getAllOWLClasses(final OntModel ontology){
+	public static ArrayList<OntClass> getAllOWLClasses(final OntModel ontology) {
 		ExtendedIterator<OntClass> owlClasses = ontology.listClasses();
 		ArrayList<OntClass> ontologyClasses = new ArrayList<OntClass>();
-		while(owlClasses.hasNext()){
+		while (owlClasses.hasNext()) {
 			ontologyClasses.add(owlClasses.next());
 		}
 		return ontologyClasses;
