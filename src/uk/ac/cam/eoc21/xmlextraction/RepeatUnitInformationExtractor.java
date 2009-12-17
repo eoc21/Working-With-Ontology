@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import populatingontologies.RDFTriple;
@@ -179,6 +180,7 @@ public class RepeatUnitInformationExtractor {
 		Set<String> measurementTechniquesSet = new HashSet<String>();
 		Set<String> measurementConditionsSet = new HashSet<String>();
 		Set<String> unitsSet = new HashSet<String>();
+		Set<String> uniqueProperties = new HashSet<String>();
 		for (int i = 0; i < children.length; i++) {
 			System.out.println(i);
 			repeatUnitIdfile = children[i].replace(".xml", "");
@@ -203,6 +205,7 @@ public class RepeatUnitInformationExtractor {
 							.getProperties().get(k).getValue();
 					propId = repeatUnit.getRepeatUnitSamples().get(j)
 							.getProperties().get(k).getId();
+					uniqueProperties.add(repeatUnit.getRepeatUnitSamples().get(j).getProperties().get(k).getId());
 					if (unitValue != " " || sampleId != " ") {
 						RDFTriple samplePropertyTriple = new RDFTriple(
 								repeatUnitIdfile + "_" + sampleId,
@@ -224,9 +227,6 @@ public class RepeatUnitInformationExtractor {
 										+ propValue);
 						triples.add(propertyValueTriple);
 					}
-					// repeatUnitIdWithUnitAndValue =
-					// repeatUnitIdfile+"_"+sampleId+"_"+propId+"_"+unitValue+"_"+propValue;
-					// System.out.println(repeatUnitIdWithUnitAndValue);
 					for (int l = 0; l < repeatUnit.getRepeatUnitSamples()
 							.get(j).getProperties().get(k).getDataProperties()
 							.size(); l++) {
@@ -279,16 +279,17 @@ public class RepeatUnitInformationExtractor {
 		for (RDFTriple rt : triples) {
 			bw.write(rt.getSubject() + ":" + rt.getPredicate() + ":"
 			+ rt.getObject()+"\n");
-			//System.out.println(rt.getSubject() + ":" + rt.getPredicate() + ":"
-				//	+ rt.getObject());
 		}
 		bw.close();
-		/*
-		 * Iterator it = measurementTechniquesSet.iterator(); int counter = 0;
-		 * FileWriter bw = new FileWriter(args[1]); while (it.hasNext()) {
-		 * //System.out.println(it.next()); bw.write(it.next().toString()+"\n");
-		 * counter++; } bw.close(); System.out.println("Number of techniques:" +
-		 * counter);
-		 */
+		
+		  Iterator it = uniqueProperties.iterator(); 
+		  int counter = 0;
+		  FileWriter uniquePropertyFile = new FileWriter(args[2]); 
+		  while (it.hasNext()) {
+			  uniquePropertyFile.write(it.next().toString()+"\n");
+		  counter++; } 
+		  uniquePropertyFile.close(); 
+		  System.out.println("Number of properties:" +counter);
+		 
 	}
 }

@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -81,6 +82,16 @@ public class OntologyReader {
 		units.readOntology();
 		OntologyReader standards = new OntologyReader(OntologyNameSpaceDictionary.MEASUREMENT_STANDARDS_URI);
 		standards.readOntology();
+		ArrayList<OntClass> oClasses = OntologyProcessor.getAllOWLClasses(oReader.getOntologyModel());
+		FileWriter fw1 = new FileWriter(args[0]);
+		for(OntClass aClass : oClasses){
+			String owlClass = aClass.getLocalName();
+			if(owlClass != null){
+				System.out.println(owlClass);
+				fw1.write(owlClass+"\n");	
+			}
+		}
+		fw1.close();
 		ArrayList<OntModel> ontologies = new ArrayList<OntModel>();
 		ontologies.add(updatedOntology);
 		ontologies.add(techniquesOntology);
