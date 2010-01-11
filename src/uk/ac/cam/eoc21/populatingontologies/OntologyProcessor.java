@@ -40,7 +40,7 @@ public class OntologyProcessor {
 		OntClass owlClass = ontology.getOntClass(nameSpace + owlClassName);
 		Individual anIndividual = ontology.createIndividual(nameSpace
 				+ instanceName, owlClass);
-		anIndividual.addComment("This is a test!!", instanceName);
+		anIndividual.addComment("Automatically added by Ed Cannon", instanceName);
 		System.out.println(anIndividual.getComment(instanceName));
 		return anIndividual;
 	}
