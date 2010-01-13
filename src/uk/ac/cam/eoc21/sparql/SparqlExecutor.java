@@ -34,13 +34,30 @@ public class SparqlExecutor {
 			"PREFIX prop: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#> " +	
 			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"+
 			"SELECT *"+
-			"WHERE {"+"?x prop:hasMeasurementTechnique ?hasMeasurementTechnique.}";
-			
+			"WHERE {"+"?x prop:hasMeasurementTechnique ?hasMeasurementTechnique.}"+
+			"LIMIT 10";
+		
+		String queryValues = 
+			"PREFIX prop: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#> " +	
+			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"+
+			"SELECT *"+
+			"WHERE {"+"?x prop:hasValue ?hasValue." +		
+			"}"+
+			"LIMIT 10";
+		
+		String queryWithFilter = 
+		"PREFIX prop: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#> " +	
+		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"+
+		"SELECT *"+
+		"WHERE{?x prop:hasValue ?val." +
+		"FILTER regex(?val, \"1.436\", \"i\")"+
+		"}" +
+		"LIMIT 200";
 		//						"SELECT *"+
 		//	"{ ?s ?p ?o "+
 		//	"      }";
 
-		com.hp.hpl.jena.query.Query query = QueryFactory.create(queryString);
+		com.hp.hpl.jena.query.Query query = QueryFactory.create(queryWithFilter);
 		QueryExecution qe = QueryExecutionFactory.create(query, model);
 		ResultSet results = qe.execSelect();
 		// Output query results	
