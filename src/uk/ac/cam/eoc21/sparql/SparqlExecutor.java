@@ -31,13 +31,14 @@ public class SparqlExecutor {
 		in.close();
 		// Create a new query
 		String queryString = 
-		//	"PREFIX foaf: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl/> " +
-		//	"SELECT ?propertyURL " +
-		//	"WHERE {" +
-		//	"       ?foaf:hasUnit ?foaf:hasMeasurementTechnique \"DSC\" . "+
+			"PREFIX prop: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#> " +	
+			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"+
 			"SELECT *"+
-			"{ ?s ?p ?o "+
-			"      }";
+			"WHERE {"+"?x prop:hasMeasurementTechnique ?hasMeasurementTechnique.}";
+			
+		//						"SELECT *"+
+		//	"{ ?s ?p ?o "+
+		//	"      }";
 
 		com.hp.hpl.jena.query.Query query = QueryFactory.create(queryString);
 		QueryExecution qe = QueryExecutionFactory.create(query, model);
