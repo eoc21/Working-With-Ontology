@@ -19,7 +19,10 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
  *
  */
 public class SparqlExecutor {
-
+	private static final String PROP_PREFIX = "PREFIX prop: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#>";
+	private static final String RDF_PREFIX = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
+	private static final String REPEATUNIT_PREFIX = "PREFIX ru: <http://www.chemoinformatician.co.uk/RepeatUnits.owl#>";
+	private static final String MEASUREMENT_TECHNIQUE_PREFIX = "PREFIX mtechnique: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomMetrology.owl#>";
 	/**
 	 * @param args
 	 * @throws IOException 
@@ -41,23 +44,24 @@ public class SparqlExecutor {
 			"PREFIX prop: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#> " +	
 			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"+
 			"SELECT *"+
-			"WHERE {"+"?x prop:hasValue ?hasValue." +		
+			"WHERE {"+"?x prop:hasValue ?hasValue." +	
+			"FILTER(?hasValue > 2000)"+
 			"}"+
 			"LIMIT 10";
-		
 		String queryWithFilter = 
 		"PREFIX prop: <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#> " +	
 		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"+
 		"SELECT *"+
-		"WHERE{?x prop:hasValue ?val." +
-		"FILTER regex(?val, \"1.436\", \"i\")"+
+		"WHERE{?x prop:hasMeasurementTechnique ?val." +
+		"FILTER regex(?val, \"GPC\", \"i\")"+
 		"}" +
 		"LIMIT 200";
+
 		//						"SELECT *"+
 		//	"{ ?s ?p ?o "+
 		//	"      }";
 
-		com.hp.hpl.jena.query.Query query = QueryFactory.create(queryWithFilter);
+		com.hp.hpl.jena.query.Query query = QueryFactory.create(queryValues);
 		QueryExecution qe = QueryExecutionFactory.create(query, model);
 		ResultSet results = qe.execSelect();
 		// Output query results	

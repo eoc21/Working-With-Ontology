@@ -8,11 +8,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.ontology.ObjectProperty;
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.vocabulary.XSD;
 
 import populatingontologies.Mapper;
 import populatingontologies.OntologyNameSpaceDictionary;
@@ -187,6 +191,7 @@ public class RepeatUnitInformationExtractor {
 		OntologyReader propertiesOntologyReader = new OntologyReader(OntologyNameSpaceDictionary.PROPERTY_URI);
 		propertiesOntologyReader.readOntology();
 		DatatypeProperty hasValue = propertiesOntologyReader.getOntologyModel().getDatatypeProperty(OntologyNameSpaceDictionary.PROPERTY_NS + "hasValue");
+		hasValue.setRange(XSD.xdouble);
 		//Need to map properties to ontology properties
 		Mapper m = new Mapper(new File(args[3]));
 		ArrayList<PolyInfo2ChemAxiomPropertyMapper> polyInfo2ChemAxiomPropMap = m.mapProperties();
@@ -253,7 +258,12 @@ public class RepeatUnitInformationExtractor {
 					}
 					Individual repeatUnitSamplePropertyInstance = OntologyProcessor.addInstance(propertiesOntologyReader.getOntologyModel(), OntologyNameSpaceDictionary.PROPERTY_NS,mappedPropId,repeatUnitIdfile+"_"+sampleId+"_"+mappedPropId);
 					repeatUnitSampleInstance.hasProperty(hasPropertyOf,repeatUnitSamplePropertyInstance);
-					repeatUnitSamplePropertyInstance.addProperty(hasValue, propValue);	
+					//Convert property value into  a double so SPARQL query works for >, <  searches etc.
+					Literal propertyValueLiteral = propertiesOntologyReader.getOntologyModel().createTypedLiteral(propValue,XSDDatatype.XSDdouble);
+					Statement propertyHasValue = propertiesOntologyReader.getOntologyModel().createStatement(repeatUnitSamplePropertyInstance, hasValue,propertyValueLiteral);
+					propertiesOntologyReader.getOntologyModel().add(propertyHasValue);
+					//
+					//repeatUnitSamplePropertyInstance.addProperty(hasValue,propValue);	
 					Individual repeatUnitSamplePropertyUnit = OntologyProcessor.addInstance(unitsOntologyReader.getOntologyModel(), OntologyNameSpaceDictionary.UNITS_NS, "Unit", repeatUnitIdfile+"_"+sampleId+"_"+unitValue);
 					repeatUnitSamplePropertyInstance.addProperty(hasUnit,unitValue); //.addProperty(hasUnit, repeatUnitSamplePropertyUnit);
 					uniqueProperties.add(repeatUnit.getRepeatUnitSamples().get(j).getProperties().get(k).getId());
