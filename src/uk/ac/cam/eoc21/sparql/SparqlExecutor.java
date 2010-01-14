@@ -45,7 +45,11 @@ public class SparqlExecutor {
 			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"+
 			"SELECT *"+
 			"WHERE {"+"?x prop:hasValue ?hasValue." +	
-			"FILTER(?hasValue > 2000)"+
+			"?x prop:hasMeasurementTechnique ?technique."+
+			"?x rdf:type <http://www.polymerinformatics.com/ChemAxiom/ChemAxiomProp.owl#DielectricConstant>."+
+			"FILTER(?hasValue > 6200)"+
+		//	"FILTER regex(?technique, \"Four\", \"i\")"+
+		//	"FILTER regex(?propertyType, \"prop:MeltingViscosity\",\"i\")"+
 			"}"+
 			"LIMIT 10";
 		String queryWithFilter = 
